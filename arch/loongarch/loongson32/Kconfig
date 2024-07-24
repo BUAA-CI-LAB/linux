@@ -66,6 +66,14 @@ config LS_SOC
 	bool
 	prompt "Loongson SOC"
 
+config MEGA_SOC_FPGA
+	bool
+	prompt "MEGA SoC For FPGA Platform"
+
+config MEGA_SOC_ASIC
+	bool
+	prompt "MEGA SoC For Lain/EULA Chip"
+
 endchoice
 
 config LOONGSON_UART_BASE

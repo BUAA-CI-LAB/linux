@@ -20,19 +20,22 @@ void mach_irq_dispatch(unsigned int pending)
 {
 	if (pending & 0x800)
 		do_IRQ(LOONGSON_TIMER_IRQ);
-#ifndef CONFIG_BX_SOC
-	if (pending & 0x20)
-		do_IRQ(4);
 	if (pending & 0x4)
-		do_IRQ(LOONGSON_GMAC_IRQ) ; //in fact , it's for ehternet
+		do_IRQ(LOONGSON_CPU_IRQ_BASE + 1);
 	if (pending & 0x8)
-		do_IRQ(LOONGSON_UART_IRQ);
-#else
-	else if (pending & 0x4)
-		do_IRQ(LOONGSON_CPU_IRQ_BASE + 2); 	/* IP2 */
-	else if (pending & 0x8)
-		do_IRQ(LOONGSON_CPU_IRQ_BASE + 3); 	/* IP2 */
-#endif
+		do_IRQ(LOONGSON_CPU_IRQ_BASE + 2);
+	if (pending & 0x10)
+		do_IRQ(LOONGSON_CPU_IRQ_BASE + 3);
+	if (pending & 0x20)
+		do_IRQ(LOONGSON_CPU_IRQ_BASE + 4);
+	if (pending & 0x40)
+		do_IRQ(LOONGSON_CPU_IRQ_BASE + 5);
+	if (pending & 0x80)
+		do_IRQ(LOONGSON_CPU_IRQ_BASE + 6);
+	if (pending & 0x100)
+		do_IRQ(LOONGSON_CPU_IRQ_BASE + 7);
+	if (pending & 0x200)
+		do_IRQ(LOONGSON_CPU_IRQ_BASE + 8);
 }
 
 asmlinkage void plat_irq_dispatch(int irq)
@@ -55,5 +58,6 @@ void __init arch_init_irq(void)
 
 	setup_IRQ();
 
-	set_csr_ecfg(ECFGF_IP0 | ECFGF_IP1 |ECFGF_IP2 | ECFGF_IP3| ECFGF_IPI | ECFGF_PC);
+	set_csr_ecfg(ECFGF_IP0 | ECFGF_IP1 | ECFGF_IP2 | ECFGF_IP3 | ECFGF_IP4 |
+		     ECFGF_IP5 | ECFGF_IP6 | ECFGF_IP7 | ECFGF_IPI | ECFGF_PC);
 }

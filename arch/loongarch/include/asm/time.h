@@ -44,6 +44,12 @@ static inline unsigned int calc_const_freq(void)
 	return 200000000;
 #elif CONFIG_BX_SOC
 	return 33000000;
+#elif CONFIG_MEGA_SOC_FPGA
+	return 100000000;
+#elif CONFIG_MEGA_SOC_ASIC
+	return 166666666;
+#else
+	return 100000000;
 #endif
 }
 #endif

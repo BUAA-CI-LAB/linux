@@ -1,0 +1,175 @@
+/dts-v1/;
+/{
+    model = "loongson,generic";
+    compatible = "loongson,loongson3";
+    #address-cells = <1>;
+    #size-cells = <1>;
+
+    aliases {
+        serial0 = &cpu_uart0;
+        mmc0 = &mmc0;
+    };
+
+    chosen {
+        stdout-path = "serial0:230400n8";
+        bootargs = "earlycon";
+        ranges;
+        framebuffer: framebuffer@7800000 {
+            compatible = "simple-framebuffer";
+            reg = <0xf000000 (800 * 600 * 2 * 4)>;
+            width = <800>;
+            height = <600>;
+            stride = <(800 * 2)>;
+            format = "r5g6b5";
+        }; 
+    };
+
+	socclk: socclk {
+		compatible = "fixed-clock";
+		clock-frequency = <133333333>;
+		#clock-cells = <0>;
+	};
+
+	i2sclk: i2sclk {
+		compatible = "fixed-clock";
+		clock-frequency = <24576000>;
+		#clock-cells = <0>;
+	};
+
+    memory {
+        name = "memory";
+        device_type = "memory";
+        reg =  <0x00000000  0x0f000000>;
+    };
+
+	cpuic: interrupt-controller {
+	    compatible = "loongson,cpu-interrupt-controller";
+        interrupt-controller;
+		#interrupt-cells = <1>;
+	};
+
+	soc {
+		compatible = "simple-bus";
+		#address-cells = <1>;
+		#size-cells = <1>;
+		ranges = <0x10000000 0x10000000 0x10000000>;
+
+        axi_intc_0: interrupt-controller@1d060000 {
+                #interrupt-cells = <1>;
+                compatible = "xlnx,xps-intc-1.00.a";
+                interrupt-controller;
+                interrupt-parent = <&cpuic>;
+                interrupts = <1>;
+                reg = <0x1d060000 0x1000>;
+                xlnx,kind-of-intr = <0x1>;
+                xlnx,num-intr-inputs = <0x8>;
+        };
+
+        cpu_uart0: serial@0x1d010000 {
+		    device_type = "serial";
+		    compatible = "ns16550a";
+		    reg = <0x1d010000 0x1000>;
+            clock-frequency = <133333333>;
+		    reg-offset = <0x0000>;
+		    reg-io-width = <1>;
+		    reg-shift = <0>;
+		    current-speed = <230400>;
+            interrupt-parent = <&cpuic>;
+		    interrupts = <5>;
+        };
+
+        i2c1: i2c@1d020000 {
+            compatible = "opencores,i2c-ocores";
+            reg = <0x1d020000 0x1000>;
+            interrupt-parent = <&axi_intc_0>;
+            interrupts = <4>;
+            clocks = <&socclk>;
+            clock-frequency = <400000>;
+            reg-shift = <0>;	/* 8 bit registers */
+            reg-io-width = <1>;	/* 8 bit read/write */
+        };
+
+        axi_ethernetlite: ethernet@1d050000 {
+			compatible = "xlnx,xps-ethernetlite-3.00.a";
+			device_type = "network";
+			mac-address = [19 98 00 01 00 29];
+			phy-handle = <&phy0>;
+			reg = <0x1d050000 0x10000>;
+			xlnx,duplex = <0x1>;
+			xlnx,include-global-buffers = <0x1>;
+			xlnx,include-internal-loopback = <0x0>;
+			xlnx,include-mdio = <0x1>;
+			xlnx,instance = "axi_ethernetlite_inst";
+			xlnx,rx-ping-pong = <0x1>;
+			xlnx,s-axi-id-width = <0x1>;
+			xlnx,tx-ping-pong = <0x1>;
+			xlnx,use-internal = <0x0>;
+			interrupt-parent = <&axi_intc_0>;
+			interrupts = <0>;
+			mdio {
+				#address-cells = <1>;
+				#size-cells = <0>;
+				phy0: phy@1 {
+					device_type = "ethernet-phy";
+					reg = <1>;
+				} ;
+			} ;
+		} ;
+
+        mmc0: mmc@1d070000 {
+			compatible = "riscv,axi-sd-card-1.0";
+			clock = <100000000>;
+			reg = <0x1d070000 0x64>;
+			fifo-depth = <256>;
+			bus-width = <4>;
+			max-frequency = <25000000>;
+            interrupt-parent = <&cpuic>;
+			interrupts = <6>;
+            cap-sd-highspeed;
+            cap-mmc-highspeed;
+            cap-mmc-hw-reset;
+            no-sdio;
+		};
+
+		usbphy: usbphy {
+			#phy-cells = <0>;
+			compatible = "usb-nop-xceiv";
+			status = "okay";
+		};
+		usb: usb@1d100000 {
+			compatible = "snps,dwc2";
+			reg = <0x1d100000 0x40000>;
+			interrupt-parent = <&axi_intc_0>;
+			interrupts = <2>;
+            clocks = <&socclk>;
+			clock-names = "otg";
+            phys = <&usbphy>;
+            phy-names = "usb2-phy";
+            dr_mode = "otg";
+			status = "okay";
+		};
+
+        audio_ss_0_audio_formatter_0: audio_formatter@1d0b0000 {
+            compatible = "xlnx,audio-formatter-1.0";
+            interrupt-names = "irq_mm2s";
+            interrupt-parent = <&cpuic>;
+            interrupts = <3>;
+            reg = <0x1d0b0000 0x1000>;
+            xlnx,tx = <&i2s_transmitter_0>;
+            // xlnx,rx = <&i2s_receiver>;
+            clock-names = "s_axi_lite_aclk", "m_axis_mm2s_aclk", "aud_mclk";
+            clocks = <&socclk>, <&socclk>, <&i2sclk>;
+        };
+
+        i2s_transmitter_0: i2s_transmitter@1d0c0000 {
+            compatible = "xlnx,i2s-transmitter-1.0";
+            clock-names = "s_axi_ctrl_aclk", "aud_mclk", "s_axis_aud_aclk";
+            clocks = <&socclk>, <&i2sclk>, <&socclk>;
+            reg = <0x1d0c0000 0x10000>;
+            xlnx,dwidth = <0x10>;
+            xlnx,num-channels = <1>;
+            xlnx,snd-pcm = <&audio_ss_0_audio_formatter_0>;
+        };
+    };
+};
+
