@@ -59,7 +59,7 @@
                 compatible = "xlnx,xps-intc-1.00.a";
                 interrupt-controller;
                 interrupt-parent = <&cpuic>;
-                interrupts = <1>;
+                interrupts = <2>;
                 reg = <0x1d060000 0x1000>;
                 xlnx,kind-of-intr = <0x1>;
                 xlnx,num-intr-inputs = <0x8>;
@@ -75,7 +75,7 @@
 		    reg-shift = <0>;
 		    current-speed = <230400>;
             interrupt-parent = <&cpuic>;
-		    interrupts = <5>;
+		    interrupts = <6>;
         };
 
         i2c1: i2c@1d020000 {
@@ -124,7 +124,7 @@
 			bus-width = <4>;
 			max-frequency = <25000000>;
             interrupt-parent = <&cpuic>;
-			interrupts = <6>;
+			interrupts = <7>;
             cap-sd-highspeed;
             cap-mmc-highspeed;
             cap-mmc-hw-reset;
@@ -153,7 +153,7 @@
             compatible = "xlnx,audio-formatter-1.0";
             interrupt-names = "irq_mm2s";
             interrupt-parent = <&cpuic>;
-            interrupts = <3>;
+            interrupts = <4>;
             reg = <0x1d0b0000 0x1000>;
             xlnx,tx = <&i2s_transmitter_0>;
             // xlnx,rx = <&i2s_receiver>;

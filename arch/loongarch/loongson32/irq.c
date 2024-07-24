@@ -18,24 +18,24 @@
 
 void mach_irq_dispatch(unsigned int pending)
 {
-	if (pending & 0x800)
-		do_IRQ(LOONGSON_TIMER_IRQ);
 	if (pending & 0x4)
-		do_IRQ(LOONGSON_CPU_IRQ_BASE + 1);
-	if (pending & 0x8)
 		do_IRQ(LOONGSON_CPU_IRQ_BASE + 2);
-	if (pending & 0x10)
+	if (pending & 0x8)
 		do_IRQ(LOONGSON_CPU_IRQ_BASE + 3);
-	if (pending & 0x20)
+	if (pending & 0x10)
 		do_IRQ(LOONGSON_CPU_IRQ_BASE + 4);
-	if (pending & 0x40)
+	if (pending & 0x20)
 		do_IRQ(LOONGSON_CPU_IRQ_BASE + 5);
-	if (pending & 0x80)
+	if (pending & 0x40)
 		do_IRQ(LOONGSON_CPU_IRQ_BASE + 6);
-	if (pending & 0x100)
+	if (pending & 0x80)
 		do_IRQ(LOONGSON_CPU_IRQ_BASE + 7);
-	if (pending & 0x200)
+	if (pending & 0x100)
 		do_IRQ(LOONGSON_CPU_IRQ_BASE + 8);
+	if (pending & 0x200)
+		do_IRQ(LOONGSON_CPU_IRQ_BASE + 9); //9
+	if (pending & 0x800)
+		do_IRQ(LOONGSON_TIMER_IRQ); // 11
 }
 
 asmlinkage void plat_irq_dispatch(int irq)
