@@ -24,13 +24,13 @@ EXPORT_SYMBOL(_loongson_uart_base);
 void prom_init_loongson_uart_base(void)
 {
 #ifdef CONFIG_LS_SOC
-	loongson_uart_base[0] =(unsigned long ) 0x9fe001e0;
-#elif CONFIG_BX_SOC
-	loongson_uart_base[0] =(unsigned long ) 0x9fe40000;
-#elif CONFIG_MEGA_SOC_FPGA
-	loongson_uart_base[0] = (unsigned char *)0x9d010000;
-#elif CONFIG_MEGA_SOC_ASIC
-	loongson_uart_base[0] = (unsigned char *)0x9d010000;
+	loongson_uart_base[0] = (unsigned long ) 0x9fe001e0;
+#elif defined(CONFIG_BX_SOC)
+	loongson_uart_base[0] = (unsigned long ) 0x9fe40000;
+#elif defined(CONFIG_MEGA_SOC_FPGA)
+	loongson_uart_base[0] = (unsigned long ) 0x9d010000;
+#elif defined(CONFIG_MEGA_SOC_ASIC)
+	loongson_uart_base[0] = (unsigned long ) 0x9d010000;
 #endif
 	_loongson_uart_base[0] =
 		(unsigned long)ioremap(loongson_uart_base[0], 8);

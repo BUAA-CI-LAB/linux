@@ -46,9 +46,15 @@ extern char __dtb_start[];
 #ifdef CONFIG_LS_SOC
 extern u32 __dtb_loongson32_ls_begin[];
 static u32 *__dtb_begin = __dtb_loongson32_ls_begin;
-#elif CONFIG_BX_SOC
+#elif defined(CONFIG_BX_SOC)
 extern u32 __dtb_loongson32_bx_begin[];
 static u32 *__dtb_begin = __dtb_loongson32_bx_begin;
+#elif defined(CONFIG_MEGA_SOC_FPGA)
+extern u32 __dtb_la32rmega_demo_begin[];
+static u32 *__dtb_begin = __dtb_la32rmega_demo_begin;
+#elif defined(CONFIG_MEGA_SOC_ASIC)
+extern u32 __dtb_la32rmega_demo_begin[];
+static u32 *__dtb_begin = __dtb_la32rmega_demo_begin;
 #endif
 extern void __init __dt_setup_arch(void *bph);
 extern bool __init early_init_dt_verify(void *params);

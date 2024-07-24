@@ -33,11 +33,11 @@ void prom_putchar(char c)
 
 #ifdef CONFIG_LS_SOC
 	uart_base = (unsigned char *)0x9fe001e0;
-#elif CONFIG_BX_SOC
+#elif defined(CONFIG_BX_SOC)
 	uart_base = (unsigned char *)0x9fe40000;
-#elif CONFIG_MEGA_SOC_FPGA
+#elif defined(CONFIG_MEGA_SOC_FPGA)
 	uart_base = (unsigned char *)0x9d010000;
-#elif CONFIG_MEGA_SOC_ASIC
+#elif defined(CONFIG_MEGA_SOC_ASIC)
 	uart_base = (unsigned char *)0x9d010000;
 #endif
 	timeout = 1024;

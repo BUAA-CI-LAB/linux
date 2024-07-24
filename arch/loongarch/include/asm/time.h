@@ -42,11 +42,11 @@ static inline unsigned int calc_const_freq(void)
 {
 #ifdef CONFIG_LS_SOC
 	return 200000000;
-#elif CONFIG_BX_SOC
+#elif defined(CONFIG_BX_SOC)
 	return 33000000;
-#elif CONFIG_MEGA_SOC_FPGA
+#elif defined(CONFIG_MEGA_SOC_FPGA)
 	return 100000000;
-#elif CONFIG_MEGA_SOC_ASIC
+#elif defined(CONFIG_MEGA_SOC_ASIC)
 	return 166666666;
 #else
 	return 100000000;
