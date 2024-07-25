@@ -422,7 +422,7 @@ static int axi_sdc_probe(struct platform_device * pdev) {
     }
 
     if (mmc->f_min == 0) mmc->f_min = host->clk_freq / 0x200; /* maximum clock division 256 * 2 */
-    if (mmc->f_max == 0) mmc->f_max = host->clk_freq / 2; /* minimum clock division 2 */
+    if (mmc->f_max == 0) mmc->f_max = host->clk_freq / 4; /* minimum clock division 2 */
     if ((mmc->caps2 & MMC_CAP2_NO_SDIO) == 0) {
         /* TODO: deprecated 10/19/2022, set in DTS */
         mmc->caps |= MMC_CAP_SD_HIGHSPEED | MMC_CAP_MMC_HIGHSPEED;
