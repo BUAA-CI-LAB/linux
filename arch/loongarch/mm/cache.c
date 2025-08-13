@@ -24,29 +24,43 @@
 #include <asm/processor.h>
 #include <asm/setup.h>
 
-#ifdef BX_SOC
-void local_flush_cache_all(void)
-{  
-   u32 num, tmp = 0; 
-   for (num = 0; num < 256; num++) {
-       cache_op(9, tmp); 
-       cache_op(9, tmp + 0x1);
+const static int icache_lsize = 16;
+const static int icache_sets = 256;
+const static int icache_ways = 4;
+const static int dcache_lsize = 16;
+const static int dcache_sets = 256;
+const static int dcache_ways = 4;
 
-       tmp = tmp >> 4;
-       tmp += 1; 
-       tmp = tmp << 4;
-   }
+static inline void local_flush_icache_all(void) {
+	unsigned int set, way;
+	for (set = 0; set < icache_sets; set++) {
+		for(way = 0; way < icache_ways; way++) {
+			cache_op(8, set * icache_lsize + way);
+		}
+    }
 }
-#endif
 
-/* Cache operations. */
+static inline void local_flush_dcache_all(void) {
+	unsigned int set, way;
+	for (set = 0; set < dcache_sets; set++) {
+		for(way = 0; way < dcache_ways; way++) {
+			cache_op(9, set * dcache_lsize + way);
+		}
+    }
+}
+
+void local_flush_cache_all(void) {
+	local_flush_dcache_all();
+	local_flush_icache_all();
+}
+
 void local_flush_icache_range(unsigned long start, unsigned long end)
 {
 	asm volatile ("\tibar 0\n"::);
-#ifdef BX_SOC
 	local_flush_cache_all();
-#endif
 }
+
+static void la32_dma_cache_wback_inv(unsigned long addr, unsigned long size);
 
 void __update_cache(unsigned long address, pte_t pte)
 {
@@ -62,6 +76,8 @@ void __update_cache(unsigned long address, pte_t pte)
 			addr = (unsigned long)kmap_atomic(page);
 		else
 			addr = (unsigned long)page_address(page);
+
+		la32_dma_cache_wback_inv(addr, 4096);
 
 		if (PageHighMem(page))
 			kunmap_atomic((void *)addr);
@@ -98,7 +114,7 @@ static void la32_dma_cache_wback_inv(unsigned long addr, unsigned long size)
      BUG_ON(size == 0);
 
      if (size >= dcache_size) {
-         blast_dcache16();
+         local_flush_dcache_all();
      } else {
          blast_dcache_range(addr, addr + size);
      }
@@ -109,8 +125,8 @@ static void la32_dma_cache_inv(unsigned long addr, unsigned long size)
     /* Catch bad driver code */
     BUG_ON(size == 0);
 
-    if ( size >= dcache_size) {
-        blast_dcache16();
+    if (size >= dcache_size) {
+        local_flush_dcache_all();
     } else {
         unsigned long lsize = cpu_dcache_line_size();
         unsigned long almask = ~(lsize - 1);
@@ -127,43 +143,19 @@ static void la32_dma_cache_inv(unsigned long addr, unsigned long size)
 static void probe_pcache(void)
 {
 	struct cpuinfo_loongarch *c = &current_cpu_data;
-	unsigned int lsize, sets, ways;
-	unsigned int config;
 
-	config = 0xfe994cd3;
+	c->icache.linesz = icache_lsize;
+	c->icache.sets = icache_sets;
+	c->icache.ways = icache_ways;
+	c->icache.waysize = c->icache.sets * c->icache.linesz;
+	icache_size = c->icache.waysize * c->icache.ways;
 
-	lsize = (config >> 19) & 7;
-	sets  = 1 << ((config & CPUCFG17_L1I_SETS_M) >> CPUCFG17_L1I_SETS);
-	ways  = ((config & CPUCFG17_L1I_WAYS_M) >> CPUCFG17_L1I_WAYS) + 1;
+    c->dcache.linesz = dcache_lsize;
+	c->dcache.sets = dcache_sets;
+	c->dcache.ways = dcache_ways;
+	c->dcache.waysize = c->dcache.sets * c->dcache.linesz;
+	dcache_size = c->dcache.waysize * c->dcache.ways;
 
-	if (lsize)
-                        c->icache.linesz = 2 << lsize;
-                else
-                        c->icache.linesz = 0;
-	c->icache.sets = 64 << ((config >> 22) & 7);
-	c->icache.ways = 1 + ((config >> 16) & 7);
-	icache_size = c->icache.sets *
-                                          c->icache.ways *
-                                          c->icache.linesz;
-	c->icache.waysize = icache_size / c->icache.ways;
-
-
-	lsize = (config >> 10) & 7;
-	sets  = 1 << ((config & CPUCFG18_L1D_SETS_M) >> CPUCFG18_L1D_SETS);
-	ways  = ((config & CPUCFG18_L1D_WAYS_M) >> CPUCFG18_L1D_WAYS) + 1;
-
-	if (lsize) {
-        c->dcache.linesz = 2 << lsize;
-    }
-    else {
-        c->dcache.linesz = 0;
-    }
-	c->dcache.sets = 64 << ((config >> 13) & 7);
-	c->dcache.ways = 1 + ((config >> 7) & 7);
-	dcache_size = c->dcache.sets *
-                                          c->dcache.ways *
-                                          c->dcache.linesz;
-	c->dcache.waysize = dcache_size / c->dcache.ways;
 	c->options |= LOONGARCH_CPU_PREFETCH;
 
 	pr_info("Primary instruction cache %ldkB, %s, %s, linesize %d bytes.\n",

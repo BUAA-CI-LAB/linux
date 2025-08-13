@@ -66,14 +66,19 @@ static inline void dma_sync_phys(phys_addr_t paddr, size_t size,
 		if (PageHighMem(page)) {
 			if (offset + len > PAGE_SIZE)
 				len = PAGE_SIZE - offset;
+			addr = kmap_atomic(page);
+		}
+		else {
+			addr = page_address(page);
 		}
 
-		addr = kmap_atomic(page);
 		if (for_device)
 			dma_sync_virt_for_device(addr + offset, len, dir);
 		else
 			dma_sync_virt_for_cpu(addr + offset, len, dir);
-		kunmap_atomic(addr);
+
+		if(PageHighMem(page))
+			kunmap_atomic(addr);
 
 		offset = 0;
 		page++;

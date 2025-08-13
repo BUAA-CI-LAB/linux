@@ -37,7 +37,6 @@ extern void copy_from_user_page(struct vm_area_struct *vma,
 
 #define ARCH_IMPLEMENTS_FLUSH_DCACHE_PAGE 1
 
-#ifdef BX_SOC
 extern void local_flush_cache_all(void);
 
 #define flush_cache_all()				local_flush_cache_all()
@@ -52,20 +51,6 @@ extern void local_flush_cache_all(void);
 #define flush_dcache_page(page)				local_flush_cache_all()
 #define flush_dcache_mmap_lock(mapping)			local_flush_cache_all()
 #define flush_dcache_mmap_unlock(mapping)		local_flush_cache_all()
-#else
-#define flush_cache_all()				do { } while (0)
-#define flush_cache_mm(mm)				do { } while (0)
-#define flush_cache_dup_mm(mm)				do { } while (0)
-#define flush_cache_range(vma, start, end)		do { } while (0)
-#define flush_cache_page(vma, vmaddr, pfn)		do { } while (0)
-#define flush_cache_vmap(start, end)			do { } while (0)
-#define flush_cache_vunmap(start, end)			do { } while (0)
-#define flush_icache_page(vma, page)			do { } while (0)
-#define flush_icache_user_page(vma, page, addr, len)	do { } while (0)
-#define flush_dcache_page(page)				do { } while (0)
-#define flush_dcache_mmap_lock(mapping)			do { } while (0)
-#define flush_dcache_mmap_unlock(mapping)		do { } while (0)
-#endif
 
 #define cache_op(op, addr)						\
 	__asm__ __volatile__(						\
